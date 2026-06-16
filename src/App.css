@@ -1,0 +1,301 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  background: #f7faf9;
+  color: #14201d;
+  text-align: right;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px;
+  background: #10241f;
+  color: #effaf5;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 8px;
+  background: #30d58b;
+  color: #10241f;
+  font-weight: 800;
+}
+
+.brand small,
+.side-card span,
+.label {
+  color: #6f817b;
+  font-size: 13px;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+
+button {
+  font: inherit;
+}
+
+.sidebar nav button,
+.filters button,
+.primary,
+.row {
+  border: 0;
+  cursor: pointer;
+}
+
+.sidebar nav button {
+  padding: 12px 14px;
+  border-radius: 8px;
+  text-align: right;
+  color: #c9d8d3;
+  background: transparent;
+}
+
+.sidebar nav button.active,
+.sidebar nav button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.side-card {
+  margin-top: auto;
+  padding: 18px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.side-card strong {
+  display: block;
+  margin: 8px 0;
+  font-size: 34px;
+}
+
+.workspace {
+  padding: 30px;
+}
+
+.topbar,
+.panel-head,
+.metrics,
+.panel-grid,
+.health-row,
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.topbar,
+.panel-head {
+  justify-content: space-between;
+  gap: 20px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  max-width: 720px;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+.primary {
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: #10241f;
+  color: #fff;
+}
+
+.metrics {
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.metrics article,
+.panel {
+  border: 1px solid #dce7e2;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(31, 62, 53, 0.08);
+}
+
+.metrics article {
+  flex: 1;
+  padding: 20px;
+}
+
+.metrics strong {
+  display: block;
+  margin: 8px 0;
+  font-size: 30px;
+}
+
+.panel {
+  padding: 22px;
+}
+
+.panel-grid {
+  align-items: stretch;
+  gap: 18px;
+}
+
+.orders-panel {
+  flex: 1.5;
+}
+
+.detail-panel {
+  flex: 1;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filters button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: #315049;
+  background: #edf5f1;
+}
+
+.filters button.selected {
+  background: #30d58b;
+  color: #0d241e;
+}
+
+.table {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 90px 1fr 110px 90px;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 8px;
+  text-align: right;
+  color: #17362f;
+  background: #f7faf9;
+}
+
+.selected-row {
+  outline: 2px solid #30d58b;
+  background: #effbf5;
+}
+
+.status,
+.badge {
+  justify-self: start;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #0f5039;
+  background: #dcf8eb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.detail-panel p {
+  margin: 14px 0 20px;
+  color: #516861;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.step span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #10241f;
+  color: #fff;
+  font-size: 13px;
+}
+
+.integrations {
+  margin-top: 18px;
+}
+
+.health-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.health-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 80px;
+  gap: 16px;
+}
+
+.bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #e6efeb;
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #23c278, #3aa0ff);
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .metrics,
+  .panel-grid,
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row,
+  .health-row {
+    grid-template-columns: 1fr;
+  }
+}

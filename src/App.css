@@ -260,8 +260,13 @@ h2 {
 
 .health-row {
   display: grid;
-  grid-template-columns: 160px 1fr 80px;
+  grid-template-columns: 160px 1fr 110px 110px;
   gap: 16px;
+}
+
+.health-row em {
+  color: #6f817b;
+  font-style: normal;
 }
 
 .bar {
@@ -276,6 +281,55 @@ h2 {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #23c278, #3aa0ff);
+}
+
+.automation-board,
+.report-grid {
+  margin-top: 18px;
+}
+
+.automation-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.automation-list article,
+.report-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #f7faf9;
+}
+
+.automation-list b {
+  min-height: 48px;
+}
+
+.automation-list em {
+  justify-self: start;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #0f5039;
+  background: #dcf8eb;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.report-card strong {
+  font-size: 38px;
+}
+
+.report-card p {
+  color: #516861;
 }
 
 @media (max-width: 860px) {
@@ -295,7 +349,9 @@ h2 {
   }
 
   .row,
-  .health-row {
+  .health-row,
+  .automation-list,
+  .report-grid {
     grid-template-columns: 1fr;
   }
 }

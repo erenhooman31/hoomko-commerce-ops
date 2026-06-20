@@ -2,19 +2,20 @@ import { useMemo, useState } from 'react'
 import './App.css'
 
 const pages = ['نمای کلی', 'سفارش ها', 'موجودی', 'اتوماسیون', 'گزارش ها']
+const orderStages = ['بررسی', 'آماده ارسال', 'پیامک ارسال شد', 'تکمیل']
 
 const orders = [
-  { id: 'WO-1048', customer: 'سفارش فروشگاه', channel: 'WooCommerce', value: 18400000, status: 'آماده ارسال', sla: '۲ ساعت' },
-  { id: 'SH-2091', customer: 'ورودی Shopify', channel: 'Shopify', value: 32600000, status: 'نیازمند بررسی', sla: '۴ ساعت' },
-  { id: 'MG-7712', customer: 'همگام سازی Magento', channel: 'Magento', value: 12800000, status: 'بسته بندی', sla: '۱ ساعت' },
-  { id: 'WO-1051', customer: 'خرید سازمانی', channel: 'WooCommerce', value: 44200000, status: 'پرداخت شده', sla: '۶ ساعت' },
+  { id: 'WO-1048', customer: 'سفارش فروشگاه', channel: 'WooCommerce', value: 18400000, status: 'آماده ارسال', sla: '۲ ساعت', risk: 'کم' },
+  { id: 'SH-2091', customer: 'ورودی Shopify', channel: 'Shopify', value: 32600000, status: 'نیازمند بررسی', sla: '۴ ساعت', risk: 'متوسط' },
+  { id: 'MG-7712', customer: 'همگام سازی Magento', channel: 'Magento', value: 12800000, status: 'بسته بندی', sla: '۱ ساعت', risk: 'کم' },
+  { id: 'WO-1051', customer: 'خرید سازمانی', channel: 'WooCommerce', value: 44200000, status: 'پرداخت شده', sla: '۶ ساعت', risk: 'بالا' },
 ]
 
 const inventory = [
-  { item: 'درگاه پرداخت', score: 96, state: 'سالم', owner: 'Backend' },
-  { item: 'سرویس پیامک', score: 82, state: 'نیازمند پایش', owner: 'Automation' },
-  { item: 'همگام سازی موجودی', score: 74, state: 'در صف', owner: 'n8n' },
-  { item: 'API ارسال', score: 91, state: 'سالم', owner: 'Integration' },
+  { item: 'درگاه پرداخت', score: 96, state: 'سالم', owner: 'Backend', fix: 'پایش خطای Callback و ثبت دوباره پرداخت های معلق' },
+  { item: 'سرویس پیامک', score: 82, state: 'نیازمند پایش', owner: 'Automation', fix: 'صف پیامک و Retry برای سفارش های پرداخت شده' },
+  { item: 'همگام سازی موجودی', score: 74, state: 'بحرانی', owner: 'n8n', fix: 'Sync دوطرفه موجودی با قفل سفارش در لحظه پرداخت' },
+  { item: 'API ارسال', score: 91, state: 'سالم', owner: 'Integration', fix: 'ثبت Tracking code و اطلاع رسانی خودکار' },
 ]
 
 const automations = [
@@ -24,47 +25,129 @@ const automations = [
   ['مرجوعی کالا', 'ساخت تیکت پشتیبانی', 'آماده'],
 ]
 
+const diagnostics = [
+  {
+    key: 'payment',
+    title: 'افت پرداخت',
+    impact: '۳ سفارش با پرداخت ناموفق در ۲۴ ساعت اخیر',
+    fix: 'Webhook پرداخت را با شناسه سفارش ذخیره کن و برای پرداخت های ناموفق لینک پرداخت جدید بساز.',
+  },
+  {
+    key: 'stock',
+    title: 'موجودی ناهماهنگ',
+    impact: '۲ کالا در خطر فروش بیشتر از موجودی واقعی',
+    fix: 'موجودی را بعد از پرداخت قفل کن و Sync با انبار را هر ۱۵ دقیقه اجرا کن.',
+  },
+  {
+    key: 'sms',
+    title: 'تاخیر پیامک',
+    impact: '۷ پیامک وضعیت سفارش در صف مانده',
+    fix: 'برای Provider پیامک Retry مرحله ای و مسیر جایگزین ایمیل فعال کن.',
+  },
+  {
+    key: 'checkout',
+    title: 'ریزش Checkout',
+    impact: 'نرخ تبدیل امروز ۰.۶٪ کمتر از هدف است',
+    fix: 'خطای فرم آدرس، هزینه ارسال و زمان پاسخ درگاه را جداگانه لاگ کن.',
+  },
+]
+
 function formatMoney(value) {
   return `${Math.round(value / 1000000)} میلیون تومان`
 }
 
 function usePersistentState(key, initialValue) {
   const [value, setValue] = useState(() => {
-    const saved = window.localStorage.getItem(key)
-    return saved ? JSON.parse(saved) : initialValue
+    try {
+      const saved = window.localStorage.getItem(key)
+      return saved ? JSON.parse(saved) : initialValue
+    } catch {
+      return initialValue
+    }
   })
 
   function updateValue(nextValue) {
-    setValue(nextValue)
-    window.localStorage.setItem(key, JSON.stringify(nextValue))
+    setValue((current) => {
+      const resolved = typeof nextValue === 'function' ? nextValue(current) : nextValue
+      window.localStorage.setItem(key, JSON.stringify(resolved))
+      return resolved
+    })
   }
 
   return [value, updateValue]
 }
 
-function MetricCards({ total, count }) {
+function Toast({ message }) {
+  return message ? <div className="toast" role="status">{message}</div> : null
+}
+
+function MetricCards({ total, count, stagedOrders }) {
+  const pending = stagedOrders.filter((stage) => stage !== 'تکمیل').length
   return (
     <section className="metrics" aria-label="شاخص های فروشگاه">
       <article>
-        <span>درآمد فیلتر شده</span>
+        <span>فروش امروز</span>
         <strong>{formatMoney(total)}</strong>
         <small>برای {count} سفارش فعال</small>
       </article>
       <article>
-        <span>اجرای اتوماسیون</span>
-        <strong>1,284</strong>
-        <small>Webhook و کارهای موجودی در این ماه</small>
+        <span>سفارش های معطل</span>
+        <strong>{pending}</strong>
+        <small>نیازمند پیگیری تا قبل از پایان SLA</small>
       </article>
       <article>
-        <span>سلامت پرداخت</span>
-        <strong>99.2%</strong>
-        <small>بررسی درگاه، سبد خرید و ایمیل</small>
+        <span>خطای پرداخت</span>
+        <strong>۳</strong>
+        <small>قابل بازیابی با لینک پرداخت دوباره</small>
+      </article>
+      <article>
+        <span>موجودی بحرانی</span>
+        <strong>۲ کالا</strong>
+        <small>نیازمند Sync و هشدار مدیر فروش</small>
       </article>
     </section>
   )
 }
 
-function OrdersPage({ channel, setChannel, filteredOrders, selected, setSelected }) {
+function OrderWorkflow({ selected, orderState, setOrderState, notify }) {
+  const currentStage = orderState[selected.id] || orderStages[0]
+  const currentIndex = orderStages.indexOf(currentStage)
+
+  function setStage(stage) {
+    setOrderState((current) => ({ ...current, [selected.id]: stage }))
+    notify(`وضعیت ${selected.id} به «${stage}» تغییر کرد.`)
+  }
+
+  return (
+    <article className="panel detail-panel">
+      <p className="label">سفارش انتخاب شده</p>
+      <div className="detail-title">
+        <h2>{selected.id}</h2>
+        <span className="status">{currentStage}</span>
+      </div>
+      <p>{selected.customer} از مسیر {selected.channel} پردازش می شود و مهلت پاسخ آن {selected.sla} است.</p>
+      <div className="steps">
+        {orderStages.map((stage, index) => (
+          <button
+            className={index <= currentIndex ? 'step done' : 'step'}
+            key={stage}
+            onClick={() => setStage(stage)}
+            type="button"
+          >
+            <span>{index + 1}</span>
+            <p>{stage}</p>
+          </button>
+        ))}
+      </div>
+      <div className="action-row">
+        <button className="secondary" onClick={() => setStage('پیامک ارسال شد')} type="button">ارسال پیامک</button>
+        <button className="primary small" onClick={() => setStage('تکمیل')} type="button">تکمیل سفارش</button>
+      </div>
+    </article>
+  )
+}
+
+function OrdersPage({ channel, setChannel, filteredOrders, selected, setSelected, orderState, setOrderState, notify }) {
   return (
     <section className="panel-grid">
       <article className="panel orders-panel">
@@ -92,25 +175,13 @@ function OrdersPage({ channel, setChannel, filteredOrders, selected, setSelected
               <span>{order.id}</span>
               <span>{order.customer}</span>
               <span>{formatMoney(order.value)}</span>
-              <span className="status">{order.status}</span>
+              <span className="status">{orderState[order.id] || order.status}</span>
             </button>
           ))}
         </div>
       </article>
 
-      <article className="panel detail-panel">
-        <p className="label">سفارش انتخاب شده</p>
-        <h2>{selected.id}</h2>
-        <p>{selected.customer} از مسیر {selected.channel} پردازش می شود و مهلت پاسخ آن {selected.sla} است.</p>
-        <div className="steps">
-          {['پرداخت تایید شد', 'موجودی رزرو شد', 'پیامک در صف ارسال است', 'برچسب ارسال آماده شد'].map((step, index) => (
-            <div className="step" key={step}>
-              <span>{index + 1}</span>
-              <p>{step}</p>
-            </div>
-          ))}
-        </div>
-      </article>
+      <OrderWorkflow selected={selected} orderState={orderState} setOrderState={setOrderState} notify={notify} />
     </section>
   )
 }
@@ -132,6 +203,7 @@ function InventoryPage() {
             <div className="bar"><i style={{ width: `${item.score}%` }} /></div>
             <strong>{item.state}</strong>
             <em>{item.owner}</em>
+            <small>{item.fix}</small>
           </div>
         ))}
       </div>
@@ -162,21 +234,96 @@ function AutomationPage() {
   )
 }
 
-function ReportsPage() {
+function DiagnosticsPanel({ selectedDiagnostic, setSelectedDiagnostic }) {
+  const active = diagnostics.find((item) => item.key === selectedDiagnostic) || diagnostics[0]
+
   return (
-    <section className="report-grid">
-      {[
-        ['نرخ تبدیل checkout', '3.8%', 'بهبود ۰.۶٪ نسبت به هفته قبل'],
-        ['میانگین زمان پردازش', '18 دقیقه', 'از پرداخت تا آماده ارسال'],
-        ['خطاهای اتصال', '7 مورد', 'همگی در صف بررسی'],
-      ].map(([title, value, text]) => (
-        <article className="panel report-card" key={title}>
-          <span>{title}</span>
-          <strong>{value}</strong>
-          <p>{text}</p>
+    <section className="panel diagnostic-panel">
+      <div className="panel-head">
+        <div>
+          <p className="label">تشخیص مشکل فروشگاه</p>
+          <h2>پیشنهاد سریع برای کاهش ریسک فروش</h2>
+        </div>
+        <span className="badge">عملیاتی</span>
+      </div>
+      <div className="diagnostic-grid">
+        <div className="diagnostic-buttons">
+          {diagnostics.map((item) => (
+            <button className={item.key === active.key ? 'selected' : ''} key={item.key} onClick={() => setSelectedDiagnostic(item.key)} type="button">
+              <span>{item.title}</span>
+              <small>{item.impact}</small>
+            </button>
+          ))}
+        </div>
+        <article className="recommendation">
+          <span>راهکار پیشنهادی</span>
+          <h3>{active.title}</h3>
+          <p>{active.fix}</p>
         </article>
-      ))}
+      </div>
     </section>
+  )
+}
+
+function ValueSection() {
+  return (
+    <section className="value-panel" aria-label="ارزش پروژه برای کارفرما">
+      <div>
+        <p className="label">چرا این پروژه برای کارفرما ارزش دارد؟</p>
+        <h2>فروشگاه اینترنتی را از سفارش تا ارسال و گزارش کنترل کن.</h2>
+      </div>
+      <ul>
+        <li>مدیر فروش می فهمد کدام سفارش، پرداخت یا موجودی قبل از ضرر باید پیگیری شود.</li>
+        <li>تیم عملیات با یک نمای RTL فارسی، وضعیت فروشگاه و سرویس ها را بدون ابزار پراکنده می بیند.</li>
+        <li>خروجی گزارش قابل ارسال به کارفرماست و نشان می دهد تصمیم ها بر اساس داده گرفته می شوند.</li>
+      </ul>
+    </section>
+  )
+}
+
+function ReportsPage({ orderState, selectedDiagnostic, notify }) {
+  function exportSummary() {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      summary: 'داشبورد عملیات فروشگاه اینترنتی',
+      orders: orders.map((order) => ({ ...order, workflowStage: orderState[order.id] || 'بررسی' })),
+      inventory,
+      diagnostic: diagnostics.find((item) => item.key === selectedDiagnostic),
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'commerce-ops-summary.json'
+    link.click()
+    URL.revokeObjectURL(url)
+    notify('گزارش عملیات فروشگاه ساخته شد.')
+  }
+
+  return (
+    <>
+      <section className="report-grid">
+        {[
+          ['نرخ تبدیل checkout', '3.8%', 'بهبود ۰.۶٪ نسبت به هفته قبل'],
+          ['میانگین زمان پردازش', '18 دقیقه', 'از پرداخت تا آماده ارسال'],
+          ['خطاهای اتصال', '7 مورد', 'همگی در صف بررسی'],
+        ].map(([title, value, text]) => (
+          <article className="panel report-card" key={title}>
+            <span>{title}</span>
+            <strong>{value}</strong>
+            <p>{text}</p>
+          </article>
+        ))}
+      </section>
+      <section className="panel export-panel">
+        <div>
+          <p className="label">خروجی قابل ارائه</p>
+          <h2>ساخت گزارش عملیات برای کارفرما</h2>
+          <p>این خروجی دمو است و فقط از داده های نمونه و وضعیت ذخیره شده در مرورگر ساخته می شود.</p>
+        </div>
+        <button className="primary" onClick={exportSummary} type="button">دریافت گزارش JSON</button>
+      </section>
+    </>
   )
 }
 
@@ -184,7 +331,15 @@ function App() {
   const [activePage, setActivePage] = usePersistentState('commerce-active-page', 'نمای کلی')
   const [channel, setChannel] = usePersistentState('commerce-channel', 'همه')
   const [selectedId, setSelectedId] = usePersistentState('commerce-selected-order', orders[0].id)
+  const [orderState, setOrderState] = usePersistentState('commerce-order-state', {})
+  const [selectedDiagnostic, setSelectedDiagnostic] = usePersistentState('commerce-diagnostic', diagnostics[0].key)
+  const [toast, setToast] = useState('')
   const selected = orders.find((order) => order.id === selectedId) || orders[0]
+
+  function notify(message) {
+    setToast(message)
+    window.setTimeout(() => setToast(''), 2600)
+  }
 
   const filteredOrders = useMemo(
     () => (channel === 'همه' ? orders : orders.filter((order) => order.channel === channel)),
@@ -192,10 +347,12 @@ function App() {
   )
 
   const total = filteredOrders.reduce((sum, order) => sum + order.value, 0)
+  const stagedOrders = orders.map((order) => orderState[order.id] || 'بررسی')
 
   return (
     <main className="app-shell" dir="rtl">
       <a className="skip-link" href="#commerce-content">رفتن به محتوای اصلی</a>
+      <Toast message={toast} />
       <aside className="sidebar" aria-label="فضای کاری">
         <div className="brand">
           <span className="brand-mark">H</span>
@@ -224,23 +381,25 @@ function App() {
             <p className="label">نمونه کار تعاملی</p>
             <h1>داشبورد مدیریت عملیات فروشگاه اینترنتی</h1>
           </div>
-          <button className="primary" type="button" onClick={() => { setActivePage('نمای کلی'); setChannel('همه') }}>
+          <button className="primary" type="button" onClick={() => { setActivePage('نمای کلی'); setChannel('همه'); notify('نمای داشبورد بازنشانی شد.') }}>
             بازنشانی نما
           </button>
         </header>
 
-        <MetricCards total={total} count={filteredOrders.length} />
+        <MetricCards total={total} count={filteredOrders.length} stagedOrders={stagedOrders} />
 
         {activePage === 'نمای کلی' && (
           <>
-            <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} />
+            <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} orderState={orderState} setOrderState={setOrderState} notify={notify} />
+            <DiagnosticsPanel selectedDiagnostic={selectedDiagnostic} setSelectedDiagnostic={setSelectedDiagnostic} />
             <InventoryPage />
+            <ValueSection />
           </>
         )}
-        {activePage === 'سفارش ها' && <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} />}
+        {activePage === 'سفارش ها' && <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} orderState={orderState} setOrderState={setOrderState} notify={notify} />}
         {activePage === 'موجودی' && <InventoryPage />}
         {activePage === 'اتوماسیون' && <AutomationPage />}
-        {activePage === 'گزارش ها' && <ReportsPage />}
+        {activePage === 'گزارش ها' && <ReportsPage orderState={orderState} selectedDiagnostic={selectedDiagnostic} notify={notify} />}
       </section>
     </main>
   )

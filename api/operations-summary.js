@@ -1,3 +1,5 @@
+import { getSupabaseServerClient } from './_lib/supabase.js'
+
 const orders = [
   { id: 'WO-1048', channel: 'WooCommerce', value: 18400000, stage: 'ready_to_ship' },
   { id: 'SH-2091', channel: 'Shopify', value: 32600000, stage: 'review' },
@@ -12,8 +14,38 @@ export default function handler(request, response) {
     return
   }
 
+  const supabase = getSupabaseServerClient()
+
+  if (supabase) {
+    supabase
+      .from('commerce_orders')
+      .select('id,channel,value,stage')
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data, error }) => {
+        if (error) {
+          response.status(500).json({ error: 'database_error', message: error.message })
+          return
+        }
+
+        const dbOrders = data || []
+        const totalRevenue = dbOrders.reduce((sum, order) => sum + Number(order.value || 0), 0)
+        response.status(200).json({
+          mode: 'supabase',
+          generatedAt: new Date().toISOString(),
+          totalRevenue,
+          orderCount: dbOrders.length,
+          pendingOrders: dbOrders.filter((order) => order.stage !== 'ready_to_ship').length,
+          criticalSignals: ['payment-callback-watch', 'stock-sync-lock', 'sms-retry-queue'],
+          orders: dbOrders,
+        })
+      })
+    return
+  }
+
   const totalRevenue = orders.reduce((sum, order) => sum + order.value, 0)
   response.status(200).json({
+    mode: 'demo',
     generatedAt: new Date().toISOString(),
     totalRevenue,
     orderCount: orders.length,

@@ -1,0 +1,14 @@
+{
+  "name": "Commerce Order Follow-up",
+  "nodes": [
+    { "parameters": { "path": "commerce-order-paid", "method": "POST" }, "name": "Order Paid Webhook", "type": "n8n-nodes-base.webhook", "position": [0, 0] },
+    { "parameters": { "conditions": { "number": [{ "value1": "={{$json.value}}", "operation": "larger", "value2": 0 }] } }, "name": "Validate Payment", "type": "n8n-nodes-base.if", "position": [260, 0] },
+    { "parameters": { "url": "https://example.com/sms", "method": "POST" }, "name": "Send SMS", "type": "n8n-nodes-base.httpRequest", "position": [520, 0] },
+    { "parameters": { "url": "https://example.com/report-log", "method": "POST" }, "name": "Log Operation", "type": "n8n-nodes-base.httpRequest", "position": [780, 0] }
+  ],
+  "connections": {
+    "Order Paid Webhook": { "main": [[{ "node": "Validate Payment", "type": "main", "index": 0 }]] },
+    "Validate Payment": { "main": [[{ "node": "Send SMS", "type": "main", "index": 0 }]] },
+    "Send SMS": { "main": [[{ "node": "Log Operation", "type": "main", "index": 0 }]] }
+  }
+}

@@ -37,6 +37,18 @@ React، Vite، CSS، `@fontsource/vazirmatn`، Vercel Functions و داده ها
 
 - `GET /api/health`
 - `GET /api/operations-summary`
+- `POST /api/contact`
+
+## راه اندازی Supabase رایگان
+
+1. در Supabase یک پروژه رایگان بسازید.
+2. فایل `supabase/schema.sql` را در SQL Editor اجرا کنید.
+3. مقادیر `.env.example` را در Vercel Environment Variables قرار دهید.
+4. بعد از Deploy، API از حالت `demo` به `supabase` تغییر می کند.
+
+## n8n
+
+Workflow قابل import در `n8n-workflows/commerce-order-followup.json` قرار دارد.
 
 ## اجرای محلی
 

@@ -398,7 +398,46 @@ function SuiteLinks() {
     <section className="suite-links" aria-label="دیگر محصولات Hoomko">
       <a href="https://hoomko-automation-hub.vercel.app">هاب اتوماسیون</a>
       <a href="https://hoomko-client-portal.vercel.app">پرتال مشتریان</a>
+      <a href="/proposal.html">پیشنهاد فارسی</a>
+      <a href="/openapi.json">OpenAPI</a>
       <a href="https://github.com/erenhooman31/hoomko-commerce-ops">GitHub</a>
+    </section>
+  )
+}
+
+function ContactSection({ notify }) {
+  const [form, setForm] = useState({ name: '', contact: '', message: 'می خواهم نسخه مشابه داشبورد فروشگاه را برای کسب و کارم داشته باشم.' })
+
+  function updateField(field, value) {
+    setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  function submitRequest(event) {
+    event.preventDefault()
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('request failed')
+        notify('درخواست شما ثبت شد. در حالت دمو، این پیام بدون ذخیره واقعی تایید می شود.')
+      })
+      .catch(() => notify('ثبت درخواست انجام نشد. لطفا اطلاعات تماس را دوباره بررسی کنید.'))
+  }
+
+  return (
+    <section className="contact-panel" aria-label="درخواست اجرای پروژه">
+      <div>
+        <h2>درخواست ساخت نسخه مشابه</h2>
+        <p>برای فروشگاه، اتوماسیون یا پرتال مشتریان پیام بفرستید. در حالت Supabase درخواست در دیتابیس ذخیره می شود.</p>
+      </div>
+      <form onSubmit={submitRequest}>
+        <input value={form.name} onChange={(event) => updateField('name', event.target.value)} placeholder="نام شما" required />
+        <input value={form.contact} onChange={(event) => updateField('contact', event.target.value)} placeholder="ایمیل یا شماره تماس" required />
+        <textarea value={form.message} onChange={(event) => updateField('message', event.target.value)} rows="3" required />
+        <button className="primary small" type="submit">ارسال درخواست</button>
+      </form>
     </section>
   )
 }
@@ -523,6 +562,7 @@ function App() {
             <OfferSection />
             <PricingSection />
             <ValueSection />
+            <ContactSection notify={notify} />
             <SuiteLinks />
           </>
         )}

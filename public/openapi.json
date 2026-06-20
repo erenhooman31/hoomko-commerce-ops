@@ -1,0 +1,27 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hoomko Commerce Ops API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Service and database mode health check",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/operations-summary": {
+      "get": {
+        "summary": "Commerce operations summary from Supabase or demo data",
+        "responses": { "200": { "description": "Summary" } }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "Create a buyer contact request",
+        "responses": { "201": { "description": "Stored" }, "202": { "description": "Accepted in demo mode" } }
+      }
+    }
+  }
+}

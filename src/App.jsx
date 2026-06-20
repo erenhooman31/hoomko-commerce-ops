@@ -374,10 +374,11 @@ function OfferSection() {
 
 function PricingSection() {
   const plans = [
-    ['پایه', '۱,۴۹۰,۰۰۰', 'داشبورد دمو، برندینگ، استقرار Vercel'],
-    ['حرفه ای', '۳,۴۹۰,۰۰۰', 'اتصال API، گزارش خروجی، آموزش تیم'],
+    ['پایه', 'تماس بگیرید', 'داشبورد دمو، برندینگ، استقرار Vercel'],
+    ['حرفه ای', 'تماس بگیرید', 'اتصال API، گزارش خروجی، آموزش تیم'],
     ['سازمانی', 'تماس بگیرید', 'اتصال اختصاصی، بک اند واقعی، پشتیبانی'],
   ]
+  const goToContact = () => document.querySelector('.contact-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   return (
     <section className="pricing-grid" aria-label="پکیج های فروش داشبورد">
@@ -386,7 +387,7 @@ function PricingSection() {
           <span>{name}</span>
           <strong>{price}</strong>
           <p>{text}</p>
-          <button className={index === 1 ? 'primary small' : 'secondary'} type="button">انتخاب پلن</button>
+          <button className={index === 1 ? 'primary small' : 'secondary'} type="button" onClick={goToContact}>انتخاب پلن</button>
         </article>
       ))}
     </section>

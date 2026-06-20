@@ -28,6 +28,20 @@ function formatMoney(value) {
   return `${Math.round(value / 1000000)} میلیون تومان`
 }
 
+function usePersistentState(key, initialValue) {
+  const [value, setValue] = useState(() => {
+    const saved = window.localStorage.getItem(key)
+    return saved ? JSON.parse(saved) : initialValue
+  })
+
+  function updateValue(nextValue) {
+    setValue(nextValue)
+    window.localStorage.setItem(key, JSON.stringify(nextValue))
+  }
+
+  return [value, updateValue]
+}
+
 function MetricCards({ total, count }) {
   return (
     <section className="metrics" aria-label="شاخص های فروشگاه">
@@ -167,9 +181,10 @@ function ReportsPage() {
 }
 
 function App() {
-  const [activePage, setActivePage] = useState('نمای کلی')
-  const [channel, setChannel] = useState('همه')
-  const [selected, setSelected] = useState(orders[0])
+  const [activePage, setActivePage] = usePersistentState('commerce-active-page', 'نمای کلی')
+  const [channel, setChannel] = usePersistentState('commerce-channel', 'همه')
+  const [selectedId, setSelectedId] = usePersistentState('commerce-selected-order', orders[0].id)
+  const selected = orders.find((order) => order.id === selectedId) || orders[0]
 
   const filteredOrders = useMemo(
     () => (channel === 'همه' ? orders : orders.filter((order) => order.channel === channel)),
@@ -180,6 +195,7 @@ function App() {
 
   return (
     <main className="app-shell" dir="rtl">
+      <a className="skip-link" href="#commerce-content">رفتن به محتوای اصلی</a>
       <aside className="sidebar" aria-label="فضای کاری">
         <div className="brand">
           <span className="brand-mark">H</span>
@@ -188,9 +204,9 @@ function App() {
             <small>داشبورد عملیات فروش آنلاین</small>
           </div>
         </div>
-        <nav>
+        <nav aria-label="بخش های داشبورد فروشگاه">
           {pages.map((item) => (
-            <button className={activePage === item ? 'active' : ''} key={item} onClick={() => setActivePage(item)} type="button">
+            <button aria-current={activePage === item ? 'page' : undefined} className={activePage === item ? 'active' : ''} key={item} onClick={() => setActivePage(item)} type="button">
               {item}
             </button>
           ))}
@@ -202,7 +218,7 @@ function App() {
         </section>
       </aside>
 
-      <section className="workspace">
+      <section className="workspace" id="commerce-content" tabIndex="-1">
         <header className="topbar">
           <div>
             <p className="label">نمونه کار تعاملی</p>
@@ -217,11 +233,11 @@ function App() {
 
         {activePage === 'نمای کلی' && (
           <>
-            <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={setSelected} />
+            <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} />
             <InventoryPage />
           </>
         )}
-        {activePage === 'سفارش ها' && <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={setSelected} />}
+        {activePage === 'سفارش ها' && <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} />}
         {activePage === 'موجودی' && <InventoryPage />}
         {activePage === 'اتوماسیون' && <AutomationPage />}
         {activePage === 'گزارش ها' && <ReportsPage />}

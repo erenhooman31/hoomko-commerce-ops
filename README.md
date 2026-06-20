@@ -24,12 +24,19 @@
 - گردش وضعیت سفارش با مراحل بررسی، آماده ارسال، پیامک ارسال شد و تکمیل
 - پنل تشخیص مشکل برای پرداخت، موجودی، پیامک و Checkout
 - گزارش JSON قابل دانلود بر اساس داده های دمو و وضعیت ذخیره شده در مرورگر
+- Vercel Function برای health check و operations summary
+- بخش معماری فنی، پکیج فروش و لینک به محصولات دیگر مجموعه Hoomko
 - ذخیره انتخاب صفحه، فیلتر، سفارش، وضعیت سفارش و تشخیص فعال در `localStorage`
 - پشتیبانی از SEO، RTL، skip link و فوکوس قابل مشاهده برای کیبورد
 
 ### فناوری ها
 
-React، Vite، CSS، `@fontsource/vazirmatn` و داده های نمونه امن بدون بک اند واقعی.
+React، Vite، CSS، `@fontsource/vazirmatn`، Vercel Functions و داده های نمونه امن بدون اطلاعات مشتری واقعی.
+
+### API دمو
+
+- `GET /api/health`
+- `GET /api/operations-summary`
 
 ## اجرای محلی
 

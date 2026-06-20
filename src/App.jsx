@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 const pages = ['نمای کلی', 'سفارش ها', 'موجودی', 'اتوماسیون', 'گزارش ها']
@@ -75,6 +75,30 @@ function usePersistentState(key, initialValue) {
   }
 
   return [value, updateValue]
+}
+
+function useApiStatus(path) {
+  const [status, setStatus] = useState({ state: 'در حال بررسی', detail: 'اتصال API در حال تست است.' })
+
+  useEffect(() => {
+    let ignore = false
+    fetch(path)
+      .then((response) => {
+        if (!response.ok) throw new Error('API unavailable')
+        return response.json()
+      })
+      .then((payload) => {
+        if (!ignore) setStatus({ state: 'فعال', detail: `${payload.service} - ${payload.capabilities.join('، ')}` })
+      })
+      .catch(() => {
+        if (!ignore) setStatus({ state: 'دموی محلی', detail: 'در محیط لوکال UI با داده امن اجرا می شود؛ روی Vercel API زنده فعال است.' })
+      })
+    return () => {
+      ignore = true
+    }
+  }, [path])
+
+  return status
 }
 
 function Toast({ message }) {
@@ -281,6 +305,104 @@ function ValueSection() {
   )
 }
 
+function ProductStory({ apiStatus }) {
+  return (
+    <section className="story-grid" aria-label="معرفی محصول فروشگاهی">
+      <article className="story-main">
+        <h2>برای فروشگاهی که هر سفارش آن باید قابل پیگیری باشد</h2>
+        <p>این محصول فقط یک داشبورد نیست؛ یک مسیر آماده فروش برای کنترل سفارش، پرداخت، موجودی، پیامک و گزارش مدیریتی است. نسخه فعلی با داده demo-safe کار می کند و معماری آن برای اتصال به WooCommerce، Shopify، Magento و سرویس ارسال آماده شده است.</p>
+      </article>
+      <article className="live-proof">
+        <span>وضعیت API</span>
+        <strong>{apiStatus.state}</strong>
+        <p>{apiStatus.detail}</p>
+      </article>
+    </section>
+  )
+}
+
+function ArchitectureSection() {
+  return (
+    <section className="architecture">
+      <div>
+        <h2>معماری قابل فروش</h2>
+        <p>Frontend فارسی، Vercel Functions برای API، خروجی گزارش، وضعیت سفارش و مسیر اتصال به پرداخت، پیامک و انبار.</p>
+      </div>
+      {['React UI', 'Vercel API', 'Order State', 'Report Export', 'Integration Ready'].map((item, index) => (
+        <div className="arch-node" key={item}>
+          <span>{index + 1}</span>
+          <strong>{item}</strong>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+function ProblemSolutionSection() {
+  const problems = ['سفارش های معطل', 'خطای پرداخت و پیامک', 'موجودی ناهماهنگ', 'گزارش دستی مدیر فروش']
+  const solutions = ['صف سفارش قابل پیگیری', 'Retry و تشخیص خطا', 'Sync آماده اتصال', 'گزارش عملیاتی قابل خروجی']
+
+  return (
+    <section className="problem-solution" aria-label="مشکل و راه حل فروشگاه">
+      <div>
+        <h2>مشکل کسب و کار</h2>
+        {problems.map((item) => <p key={item}>{item}</p>)}
+      </div>
+      <div>
+        <h2>راه حل آماده فروش</h2>
+        {solutions.map((item) => <p key={item}>{item}</p>)}
+      </div>
+    </section>
+  )
+}
+
+function OfferSection() {
+  return (
+    <section className="offer-band" aria-label="پیشنهاد فروش محصول">
+      <div>
+        <h2>پکیج آماده برای کارفرما</h2>
+        <p>راه اندازی داشبورد عملیات فروشگاه، اتصال اولیه API، گزارش مدیریتی، آموزش تیم و نسخه قابل توسعه برای بک اند واقعی.</p>
+      </div>
+      <ul>
+        <li>تحویل نسخه نمایشی در ۳ روز کاری</li>
+        <li>اتصال اختصاصی به فروشگاه و سرویس پیامک</li>
+        <li>طراحی فارسی، واکنش گرا و آماده ارائه به مدیر فروش</li>
+      </ul>
+    </section>
+  )
+}
+
+function PricingSection() {
+  const plans = [
+    ['پایه', '۱,۴۹۰,۰۰۰', 'داشبورد دمو، برندینگ، استقرار Vercel'],
+    ['حرفه ای', '۳,۴۹۰,۰۰۰', 'اتصال API، گزارش خروجی، آموزش تیم'],
+    ['سازمانی', 'تماس بگیرید', 'اتصال اختصاصی، بک اند واقعی، پشتیبانی'],
+  ]
+
+  return (
+    <section className="pricing-grid" aria-label="پکیج های فروش داشبورد">
+      {plans.map(([name, price, text], index) => (
+        <article className={index === 1 ? 'price-card featured' : 'price-card'} key={name}>
+          <span>{name}</span>
+          <strong>{price}</strong>
+          <p>{text}</p>
+          <button className={index === 1 ? 'primary small' : 'secondary'} type="button">انتخاب پلن</button>
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function SuiteLinks() {
+  return (
+    <section className="suite-links" aria-label="دیگر محصولات Hoomko">
+      <a href="https://hoomko-automation-hub.vercel.app">هاب اتوماسیون</a>
+      <a href="https://hoomko-client-portal.vercel.app">پرتال مشتریان</a>
+      <a href="https://github.com/erenhooman31/hoomko-commerce-ops">GitHub</a>
+    </section>
+  )
+}
+
 function ReportsPage({ orderState, selectedDiagnostic, notify }) {
   function exportSummary() {
     const payload = {
@@ -334,6 +456,7 @@ function App() {
   const [orderState, setOrderState] = usePersistentState('commerce-order-state', {})
   const [selectedDiagnostic, setSelectedDiagnostic] = usePersistentState('commerce-diagnostic', diagnostics[0].key)
   const [toast, setToast] = useState('')
+  const apiStatus = useApiStatus('/api/health')
   const selected = orders.find((order) => order.id === selectedId) || orders[0]
 
   function notify(message) {
@@ -380,6 +503,7 @@ function App() {
           <div>
             <p className="label">نمونه کار تعاملی</p>
             <h1>داشبورد مدیریت عملیات فروشگاه اینترنتی</h1>
+            <p className="hero-copy">یک محصول آماده فروش برای کنترل سفارش، پرداخت، موجودی، ارسال و گزارش در فروشگاه های آنلاین.</p>
           </div>
           <button className="primary" type="button" onClick={() => { setActivePage('نمای کلی'); setChannel('همه'); notify('نمای داشبورد بازنشانی شد.') }}>
             بازنشانی نما
@@ -390,10 +514,16 @@ function App() {
 
         {activePage === 'نمای کلی' && (
           <>
+            <ProductStory apiStatus={apiStatus} />
+            <ProblemSolutionSection />
             <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} orderState={orderState} setOrderState={setOrderState} notify={notify} />
             <DiagnosticsPanel selectedDiagnostic={selectedDiagnostic} setSelectedDiagnostic={setSelectedDiagnostic} />
             <InventoryPage />
+            <ArchitectureSection />
+            <OfferSection />
+            <PricingSection />
             <ValueSection />
+            <SuiteLinks />
           </>
         )}
         {activePage === 'سفارش ها' && <OrdersPage channel={channel} setChannel={setChannel} filteredOrders={filteredOrders} selected={selected} setSelected={(order) => setSelectedId(order.id)} orderState={orderState} setOrderState={setOrderState} notify={notify} />}

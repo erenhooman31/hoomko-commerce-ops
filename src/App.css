@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  background: #f7faf9;
+  background: #f8fbfa;
   color: #14201d;
   text-align: right;
 }
@@ -140,7 +140,7 @@ a:focus-visible,
 }
 
 .workspace {
-  padding: 30px;
+  padding: 34px;
 }
 
 .topbar,
@@ -163,6 +163,14 @@ h1 {
   font-size: clamp(34px, 5vw, 56px);
   line-height: 1.08;
   letter-spacing: 0;
+}
+
+.hero-copy {
+  max-width: 720px;
+  margin-top: 14px;
+  color: #516861;
+  font-size: 17px;
+  line-height: 1.9;
 }
 
 h2 {
@@ -200,11 +208,16 @@ h2 {
 
 .metrics article,
 .panel,
-.value-panel {
+.value-panel,
+.story-main,
+.live-proof,
+.offer-band,
+.problem-solution,
+.price-card {
   border: 1px solid #dce7e2;
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 18px 50px rgba(31, 62, 53, 0.08);
+  box-shadow: 0 12px 32px rgba(31, 62, 53, 0.05);
 }
 
 .metrics article {
@@ -494,6 +507,177 @@ h2 {
   padding: 0 20px 0 0;
 }
 
+.story-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.story-main,
+.live-proof,
+.offer-band {
+  padding: 24px;
+}
+
+.story-main h2,
+.architecture h2,
+.offer-band h2 {
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.story-main p,
+.architecture p,
+.offer-band p,
+.live-proof p {
+  color: #516861;
+  line-height: 1.9;
+}
+
+.live-proof {
+  background: #10241f;
+  color: #effaf5;
+}
+
+.live-proof span {
+  color: #9beabb;
+}
+
+.live-proof strong {
+  display: block;
+  margin: 10px 0;
+  font-size: 34px;
+}
+
+.live-proof p {
+  color: #dbeee8;
+}
+
+.architecture {
+  display: grid;
+  grid-template-columns: 1.3fr repeat(5, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+  padding: 22px;
+  border-radius: 8px;
+  background: #10241f;
+  color: #effaf5;
+}
+
+.architecture p {
+  color: #dbeee8;
+}
+
+.arch-node {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-height: 120px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+}
+
+.arch-node span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #30d58b;
+  color: #10241f;
+  font-weight: 800;
+}
+
+.offer-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+  background: #f2fbf6;
+}
+
+.offer-band ul {
+  margin: 0;
+  padding: 0 20px 0 0;
+  color: #315049;
+  line-height: 2;
+}
+
+.problem-solution {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 24px;
+}
+
+.problem-solution div {
+  display: grid;
+  gap: 10px;
+}
+
+.problem-solution h2 {
+  margin-bottom: 6px;
+}
+
+.problem-solution p {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #315049;
+  background: #f2fbf6;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.price-card {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+}
+
+.price-card.featured {
+  border-color: #30d58b;
+  background: #f2fbf6;
+}
+
+.price-card span {
+  color: #315049;
+  font-weight: 800;
+}
+
+.price-card strong {
+  font-size: 30px;
+}
+
+.price-card p {
+  color: #516861;
+  line-height: 1.8;
+}
+
+.suite-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.suite-links a {
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #10241f;
+  background: #e6f3ee;
+  text-decoration: none;
+  font-weight: 800;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -502,7 +686,15 @@ h2 {
   .metrics,
   .automation-list,
   .report-grid,
-  .diagnostic-grid {
+  .diagnostic-grid,
+  .story-grid,
+  .architecture,
+  .offer-band {
+    grid-template-columns: 1fr;
+  }
+
+  .problem-solution,
+  .pricing-grid {
     grid-template-columns: 1fr;
   }
 
